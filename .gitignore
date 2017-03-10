@@ -1,0 +1,14 @@
+profiles.clj
+project/resources/public/js/*
+project/resources/public/test/*
+project/.lein-env
+project/.lein-repl-history
+project/doo-index.html
+project/figwheel_server.log
+project/target/*
+project/resources/public/css/site.css
+project/.lein-failures
+project/resources/public/css/site.min.css
+tst
+target
+.lein-env
