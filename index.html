@@ -1,0 +1,11 @@
+<html>
+    <body>
+        <script type="text/javascript" src="out/goog/base.js"></script>
+        <script type="text/javascript" src="out/jericho-midi.js"></script>
+        <script>
+jericho_midi.core.initialize_midi(function () {
+    });
+    setInterval(function() {jericho_midi.core.get_interfaces( function (res) { console.log(res)} )}, 1000);
+        </script>
+    </body>
+</html>

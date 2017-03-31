@@ -12,3 +12,4 @@ project/resources/public/css/site.min.css
 tst
 target
 .lein-env
+out/*
