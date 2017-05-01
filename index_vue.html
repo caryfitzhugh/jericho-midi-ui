@@ -1,0 +1,79 @@
+<html>
+  <head>
+    <style>
+      fieldset label { display: block; clear: both; }
+      fieldset input { display: block; clear: both; }
+      fieldset select { display: block; clear: both; }
+      fieldset { display: block;  width: 44%; float: left}
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1> Jericho MIDI </h1>
+      <div v-if="midi_devices">
+        <p v-if='midi_devices == "loading"'> Loading... </p>
+        <p v-else>
+          <label>Device:</label>
+          <select v-model="selected_midi_device">
+            <option value="null">Select a device</option>
+            <option v-for="(device, indx) in midi_devices" :value="device[1]">{{device[0]}}</option>
+          </select>
+          <div v-if='selected_midi_device'>
+            <button v-on:click='reload_config'>Reload Device</button>
+          </div>
+        </p>
+        <hr/>
+        <div v-if='selected_midi_device'>
+          <h1>{{selected_midi_device.name}}</h1>
+          <button v-on:click="save_current_config"> Save MIDI Configuration </button>
+          <div v-if='selected_midi_device.config'>
+            <div v-for="(button,indx) in selected_midi_device.config.buttons">
+              <fieldset>
+                <legend> Button {{indx}} </legend>
+                <label> Type </label>
+                <select v-model="button.type">
+                  <option v-for="available_type in button.available_types">{{available_type}}</option>
+                </select>
+                <label> Radio Group </label>
+                <select v-model.number="button.radio_group">
+                  <option value='0'>Off</option>
+                  <option v-for="available_radio_group in button.available_radio_groups">{{available_radio_group}}</option>
+                </select>
+                <fieldset>
+                  <legend> On </legend>
+                  <label> MIDI Type </label>
+                  <input v-model.number="button.on.midi_type"/>
+                  <label> MIDI Note </label>
+                  <input v-model.number="button.on.note"/>
+                  <label> MIDI Volume </label>
+                  <input v-model.number="button.on.volume"/>
+                  <label> MIDI Channel </label>
+                  <input v-model.number="button.on.channel"/>
+                </fieldset>
+                <fieldset>
+                  <legend> Off </legend>
+                  <label> MIDI Type </label>
+                  <input v-model.number="button.off.midi_type"/>
+                  <label> MIDI Note </label>
+                  <input v-model.number="button.off.note"/>
+                  <label> MIDI Volume </label>
+                  <input v-model.number="button.off.volume"/>
+                  <label> MIDI Channel </label>
+                  <input v-model.number="button.off.channel"/>
+                </fieldset>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-else>
+        <button v-on:click="load_midi"> Load MIDI </button>
+      </div>
+    </div>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="./js/utils.js"></script>
+    <script src="./js/midi.js"></script>
+    <script src="./js/devices.js"></script>
+    <script src="./js/ui.js"></script>
+  </body>
+</html>
