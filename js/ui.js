@@ -21,18 +21,7 @@ var app = new Ractive({
       midi_notes: (function() {
         var notes = [];
           for (var i = 0 ; i < 127; i++) {
-            var name = {0: "C",
-                        1: "C#",
-                        2: "D",
-                        3: "D#",
-                        4: "E",
-                        5: "F",
-                        6: "F#",
-                        7: "G",
-                        8: "G#",
-                        9: "A",
-                        10:"A#",
-                        11:"B"}[i % 12] + "" + (Math.floor(i / 12) - 1);
+            var name = {0: "C", 1: "C#", 2: "D", 3: "D#", 4: "E", 5: "F", 6: "F#", 7: "G", 8: "G#", 9: "A", 10:"A#", 11:"B"}[i % 12] + "" + (Math.floor(i / 12) - 1);
             notes.push({value: i, name: name});
           }
         return notes;
@@ -191,12 +180,6 @@ app.on('save_config', function(evt) {
   device = app.get('midi_devices.' + app.get("selected_midi_device"));
   if (device) {
     MIDI.save_device_config(device)
-  }
-});
-app.on('reload_config', function(evt) {
-  device = app.get('midi_devices.' + app.get("selected_midi_device"));
-  if (device) {
-    MIDI.send_get_config(device)
   }
 });
 app.on('load_devices', function(evt) {
