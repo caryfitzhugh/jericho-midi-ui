@@ -1,48 +1,227 @@
 <html>
   <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+    <script src='http://cdn.ractivejs.org/latest/ractive.js'></script>
     <style>
-      fieldset label { display: block; clear: both; }
-      fieldset input { display: block; clear: both; }
-      fieldset select { display: block; clear: both; }
-      fieldset { display: block;  width: 44%; float: left}
+      * {
+        border-radius: 0 !important;
+      }
+      select {
+        -webkit-appearance: none;
+      }
+      .footer {
+        position: fixed;
+        bottom: 0;
+        right:0;
+        left:0;
+        /* Set the fixed height of the footer here */
+        height: 60px;
+        line-height: 60px; /* Vertically center the text there */
+        background-color: #f5f5f5;
+      }
+      .footer .btn { margin: 20px; position: relative; top: -10px;}
     </style>
   </head>
+
   <body>
-    <div id="app">
-      <h1> Jericho MIDI </h1>
-      <div v-if="midi_devices">
-        <p v-if='midi_devices == null'> Loading... </p>
-        <p v-else>
-          <label>Device:</label>
-          <select v-model="selected_midi_device">
-            <option value="null">Select a device</option>
-            <option v-for="(device, indx) in midi_devices" :value="device[1]">{{device[0]}}</option>
-          </select>
-          <div v-if='selected_midi_device'>
-            <button v-on:click='reload_config'>Reload Device</button>
-          </div>
-        </p>
-        <hr/>
-        <div v-if='selected_midi_device'>
-          <h1>{{selected_midi_device.name}}</h1>
-          <button v-on:click="save_current_config"> Save MIDI Configuration </button>
-          <div v-if='selected_midi_device.config'>
-            <div v-for="(button,index) in selected_midi_device.config.buttons">
-              <button-edit :button.sync="button" :index="index" :options="options"></button-edit>
+    <div id="app"></div>
+    <script id='app_template' type='text/ractive'>
+      <nav class='navbar bg-faded' style='flex-direction: row'>
+        <a class='navbar-brand'>Jericho MIDI</a>
+
+        {{#if midi_devices }}
+          <form class='form form-inline'>
+            <div class='form-group'>
+              <select class='form-control' value="{{selected_midi_device}}">
+                <option >Select a device</option>
+                {{#each midi_devices:i}}
+                  <option value="{{i}}">{{name}}</option>
+                {{/each midi_devices:i}}
+              </select>
             </div>
+           <button class='btn btn-secondary form-control' on-click='reload_config'>Reload Device</button>
+          </form>
+        {{else}}
+          <p> Loading...</p>
+        {{/if midi_devices}}
+      </nav>
+
+      {{> current_device_template}}
+      <footer class="footer">
+        <div class="container">
+          {{#midi_devices[selected_midi_device]}}
+            <div>
+              <button class='btn btn-block btn-primary' on-click='save_config'>Save Configuration</button>
+            </div>
+          {{/midi_devices[selected_midi_device]}}
+        </div>
+      </footer>
+   </script>
+
+
+  <script id='button_event_note_select_template' type='text/ractive'>
+    <div class="form-group row">
+      <label class="col-2 col-form-label"> Note</label>
+      <div class="col-10">
+        <select class='form-control' value='{{note}}'>
+          {{#each options.midi_notes}}
+            <option value='{{value}}'>{{name}}</option>
+          {{/each options.midi_notes}}
+        </select>
+      </div>
+    </div>
+  </script>
+  <script id='button_event_velocity_select_template' type='text/ractive'>
+    <div class="form-group row">
+      <label class="col-2 col-form-label"> Velocity</label>
+      <div class="col-10">
+        <input type='range' min='0' max='127' class='form-control' value='{{volume}}'>
+        {{volume}}
+      </div>
+    </div>
+  </script>
+  <script id='button_event_aftertouch_select_template' type='text/ractive'>
+    <div class="form-group row">
+      <label class="col-2 col-form-label"> Aftertouch</label>
+      <div class="col-10">
+        <input type='range' min='0' max='127' class='form-control' value='{{volume}}'>{{volume}}
+      </div>
+    </div>
+  </script>
+  <script id='button_event_control_mode_select_template' type='text/ractive'>
+    <div class="form-group row">
+      <label class="col-2 col-form-label"> Control Message</label>
+      <div class="col-10">
+        <select class='form-control' value='{{note}}'>
+          {{#each options.midi_control_types}}
+            <option value='{{value}}'>{{name}} {{hex_display(value)}}</option>
+          {{/each options.midi_control_types}}
+        </select>
+      </div>
+    </div>
+  </script>
+  <script id='button_event_control_mode_attribute_select_template' type='text/ractive'>
+    <div class="form-group row">
+      {{#control_type(note).onoff}}
+        <label class="col-2 col-form-label"> On / Off</label>
+        <div class="col-10">
+            <select class='form-control' value='{{volume}}'>
+              <option value='0'> Off</option>
+              <option value='127'> On</option>
+            </select>
+        </div>
+       {{/control_type(note).onoff}}
+      {{#control_type(note).velocity}}
+        <label class="col-2 col-form-label"> Velocity </label>
+        <div class="col-10">
+          <input type='range' min='0' max='127' class='form-control' value='{{volume}}'>
+          {{volume}}
+        </div>
+       {{/control_type(note).velocity}}
+      {{#control_type(note).raw}}
+        <label class="col-2 col-form-label"> Raw </label>
+        <div class="col-10">
+          <input type='number' min='0' max='127' class='form-control' value='{{volume}}'>
+        </div>
+       {{/control_type(note).raw}}
+    </div>
+  </script>
+
+
+  <script id='button_event_template' type='text/ractive'>
+    <div>
+      <div class="form-group row">
+        <label class="col-2 col-form-label"> Type</label>
+        <div class="col-10">
+          <select class='form-control' value='{{midi_type}}'>
+            {{#each options.midi_types}}
+              <option value='{{value}}'>{{name}}</option>
+            {{/each options.midi_types}}
+          </select>
+        </div>
+      </div>
+
+      {{#if midi_type === 128}}
+        {{> button_event_note_select_template }}
+      {{/if midi_type === 128}}
+
+      {{#if midi_type === 144}}
+        {{> button_event_note_select_template }}
+        {{> button_event_velocity_select_template }}
+      {{/if midi_type === 144}}
+      {{#if midi_type === 160}}
+        {{> button_event_note_select_template }}
+        {{> button_event_aftertouch_select_template }}
+      {{/if midi_type === 160}}
+      {{#if midi_type === 176}}
+        {{> button_event_control_mode_select_template }}
+        {{> button_event_control_mode_attribute_select_template }}
+      {{/if midi_type === 176}}
+    </div>
+  </script>
+
+  <script id='button_template' type='text/ractive'>
+    <div class='card'>
+      <div class='card-block'>
+        <div class="form-group row">
+          <label class="col-2 col-form-label">Button Type</label>
+          <div class="col-10">
+            <select class='form-control' value='{{type}}'>
+              {{#each available_types}}
+                <option value='{{.}}'>{{.}}</option>
+              {{/each available_types}}
+            </select>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-2 col-form-label">Radio Group</label>
+          <div class="col-10">
+            <select class='form-control' value='{{radio_group}}'>
+              {{#each available_radio_groups}}
+                <option value='{{.}}'>{{.}}</option>
+              {{/each available_radio_groups}}
+            </select>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-6">
+            <h3>On Event</h3>
+            {{#on}}
+              {{> button_event_template}}
+            {{/on}}
+          </div>
+          <div class="col-6">
+            <h3>Off Event</h3>
+            {{#off}}
+              {{> button_event_template}}
+            {{/off}}
           </div>
         </div>
       </div>
     </div>
+  </script>
 
-    <script src="https://unpkg.com/vue"></script>
+  <script id='current_device_template' type='text/ractive'>
+    {{#midi_devices[selected_midi_device]}}
+      <div class='container-fluid'>
+        {{#config.buttons}}
+          <div class='card-group'>
+            {{> button_template }}
+          </div>
+        {{/buttons}}
+      </div>
+    {{/midi_devices}}
+  </script>
     <script src="./js/utils.js"></script>
     <script src="./js/midi.js"></script>
     <script src="./js/devices.js"></script>
     <script src="./js/ui.js"></script>
 
     <script defer>
-      app.load_midi();
+      app.fire('load_devices');
     </script>
   </body>
 </html>

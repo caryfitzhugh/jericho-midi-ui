@@ -47,7 +47,6 @@ var Devices = {
         // Config response:
         if (tokens[0] === "btns") {
           device.config.button_count = parseInt(tokens[1],10);
-          device.config.buttons = [];
         }
       } else if  (msg == d.responses.button_config)  {
         if (tokens[0] === "i" &&
@@ -57,6 +56,9 @@ var Devices = {
             tokens[12] === "off") {
 
           var indx = parseInt(tokens[1], 10);
+          device.config = device.config || {};
+          device.config.buttons = device.config.buttons || [];
+
           device.config.buttons[indx] = {
             type: d.button_types[tokens[3]],
             available_types: d.button_types,

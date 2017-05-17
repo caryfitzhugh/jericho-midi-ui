@@ -1,9 +1,10 @@
 const ManufacturerName = "JerichoMIDI";
 var MIDI = {
-  midi_listener: (app, device) => {
+  midi_listener: (device) => {
     var dev_conf = Devices[device.name];
 
     device.input.addEventListener( 'midimessage', function(ev){
+
       if (ev.data[0] == 0xF0 && ev.data[ev.data.length-1] == 0xF7) {
         // msg-type:<datablob>
         var payload = String.fromCharCode.apply(String,ev.data.slice(1,-1)).split(":",2);
@@ -12,9 +13,7 @@ var MIDI = {
         var tokens = data.split(",");
         if (tokens[tokens.length-1] === "end") {
           dev_conf.process(msg, tokens.slice(0,-1), device);
-          debugger;
-          Vue.set(app.$data, "midi_devices", app.$data.midi_devices);
-          app.$forceUpdate();
+          app.update("midi_devices");
         }
       }});
   },
@@ -52,7 +51,7 @@ var MIDI = {
     }
   },
 
-  load_devices: function (app,cb) {
+  load_devices: function (cb) {
     navigator.requestMIDIAccess({sysex: true})
       .then((res) => {
         var devices = {};
@@ -93,8 +92,8 @@ var MIDI = {
         Object.keys(devices).forEach((key) => {
           devices[key].forEach((val) => {
             // Attach Listeners to all the devices
-            MIDI.midi_listener(app,val);
-            devices_list.push([key, val]);
+            MIDI.midi_listener(val);
+            devices_list.push(val);
           });
         });
         cb(devices_list);
