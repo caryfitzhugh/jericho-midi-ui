@@ -1,11 +1,48 @@
 <html>
-    <body>
-        <script type="text/javascript" src="out/goog/base.js"></script>
-        <script type="text/javascript" src="out/jericho-midi.js"></script>
-        <script>
-          jericho_midi.core.initialize_midi(function () {
-            jericho_midi.core.get_interfaces( function (res) { console.log(res)} );
-          });
-        </script>
-    </body>
+  <head>
+    <style>
+      fieldset label { display: block; clear: both; }
+      fieldset input { display: block; clear: both; }
+      fieldset select { display: block; clear: both; }
+      fieldset { display: block;  width: 44%; float: left}
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1> Jericho MIDI </h1>
+      <div v-if="midi_devices">
+        <p v-if='midi_devices == null'> Loading... </p>
+        <p v-else>
+          <label>Device:</label>
+          <select v-model="selected_midi_device">
+            <option value="null">Select a device</option>
+            <option v-for="(device, indx) in midi_devices" :value="device[1]">{{device[0]}}</option>
+          </select>
+          <div v-if='selected_midi_device'>
+            <button v-on:click='reload_config'>Reload Device</button>
+          </div>
+        </p>
+        <hr/>
+        <div v-if='selected_midi_device'>
+          <h1>{{selected_midi_device.name}}</h1>
+          <button v-on:click="save_current_config"> Save MIDI Configuration </button>
+          <div v-if='selected_midi_device.config'>
+            <div v-for="(button,index) in selected_midi_device.config.buttons">
+              <button-edit :button.sync="button" :index="index" :options="options"></button-edit>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/vue"></script>
+    <script src="./js/utils.js"></script>
+    <script src="./js/midi.js"></script>
+    <script src="./js/devices.js"></script>
+    <script src="./js/ui.js"></script>
+
+    <script defer>
+      app.load_midi();
+    </script>
+  </body>
 </html>

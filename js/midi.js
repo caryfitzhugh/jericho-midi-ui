@@ -12,6 +12,8 @@ var MIDI = {
         var tokens = data.split(",");
         if (tokens[tokens.length-1] === "end") {
           dev_conf.process(msg, tokens.slice(0,-1), device);
+          debugger;
+          Vue.set(app.$data, "midi_devices", app.$data.midi_devices);
           app.$forceUpdate();
         }
       }});
@@ -49,10 +51,15 @@ var MIDI = {
       device.output.send(bytes);
     }
   },
+
   load_devices: function (app,cb) {
     navigator.requestMIDIAccess({sysex: true})
       .then((res) => {
         var devices = {};
+
+        res.onstatechange = function() {
+          console.log("MIDI Changed... - Alert the user if their device is gone");
+        }
 
         for (const input of res.inputs.values()) {
           if (input.name.match(ManufacturerName)) {
